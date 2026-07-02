@@ -28,6 +28,61 @@ const PIECES = [
 
 const LINE_SCORES = [0, 100, 300, 500, 800];
 
+// ---- Visual themes / skins ----
+const SKIN_STORAGE_KEY = 'tetris-skin';
+
+const THEMES = {
+  retro: {
+    // Flat colors, square blocks — identical to the original look.
+    colors: COLORS,
+    glow: false,
+    rounded: false,
+    pattern: false,
+  },
+  neon: {
+    // Bright saturated palette + glow, paired with a near-black canvas bg.
+    colors: [
+      null,
+      '#00e5ff', // I
+      '#ffee58', // O
+      '#e040fb', // T
+      '#69f0ae', // S
+      '#ff1744', // Z
+      '#40c4ff', // J
+      '#ff9100', // L
+    ],
+    glow: true,
+    rounded: false,
+    pattern: false,
+  },
+  pastel: {
+    // Softer/desaturated palette + rounded block corners.
+    colors: [
+      null,
+      '#b2ebf2', // I
+      '#fff9c4', // O
+      '#e1bee7', // T
+      '#c8e6c9', // S
+      '#ffcdd2', // Z
+      '#bbdefb', // J
+      '#ffe0b2', // L
+    ],
+    glow: false,
+    rounded: true,
+    pattern: false,
+  },
+  pixel: {
+    // Same flat palette as retro, with a checkerboard texture on top.
+    colors: COLORS,
+    glow: false,
+    rounded: false,
+    pattern: true,
+  },
+};
+
+const VALID_THEMES = Object.keys(THEMES);
+let currentTheme = 'retro';
+
 const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
 const nextCanvas = document.getElementById('next-canvas');
@@ -39,6 +94,7 @@ const overlay = document.getElementById('overlay');
 const overlayTitle = document.getElementById('overlay-title');
 const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
+const skinSelect = document.getElementById('skin-select');
 
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 
@@ -156,16 +212,77 @@ function updateHUD() {
   levelEl.textContent = level;
 }
 
+function drawRoundedRectPath(context, x, y, w, h, r) {
+  if (typeof context.roundRect === 'function') {
+    context.beginPath();
+    context.roundRect(x, y, w, h, r);
+    return;
+  }
+  // Fallback for canvas implementations without roundRect().
+  const radius = Math.min(r, w / 2, h / 2);
+  context.beginPath();
+  context.moveTo(x + radius, y);
+  context.lineTo(x + w - radius, y);
+  context.quadraticCurveTo(x + w, y, x + w, y + radius);
+  context.lineTo(x + w, y + h - radius);
+  context.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+  context.lineTo(x + radius, y + h);
+  context.quadraticCurveTo(x, y + h, x, y + h - radius);
+  context.lineTo(x, y + radius);
+  context.quadraticCurveTo(x, y, x + radius, y);
+  context.closePath();
+}
+
+function drawPixelTexture(context, x, y, size) {
+  const half = size / 2;
+  context.fillStyle = 'rgba(0,0,0,0.18)';
+  context.fillRect(x, y, half, half);
+  context.fillRect(x + half, y + half, size - half, size - half);
+  context.fillStyle = 'rgba(255,255,255,0.10)';
+  context.fillRect(x + half, y, size - half, half);
+  context.fillRect(x, y + half, half, size - half);
+}
+
 function drawBlock(context, x, y, colorIndex, size, alpha) {
   if (!colorIndex) return;
-  const color = COLORS[colorIndex];
+  const theme = THEMES[currentTheme];
+  const color = theme.colors[colorIndex];
+  const px = x * size + 1;
+  const py = y * size + 1;
+  const s = size - 2;
+
   context.globalAlpha = alpha ?? 1;
+  context.shadowBlur = 0;
+  if (theme.glow) {
+    context.shadowBlur = 12;
+    context.shadowColor = color;
+  }
+
+  context.save();
+  if (theme.rounded) {
+    // Clip to a rounded-rect path so the flat fillRect calls below end up
+    // with rounded corners without duplicating the fill logic.
+    drawRoundedRectPath(context, px, py, s, s, 6);
+    context.clip();
+  }
+
   context.fillStyle = color;
-  context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
+  context.fillRect(px, py, s, s);
+
+  // Reset the glow so it doesn't bleed into the highlight/pattern overlay.
+  context.shadowBlur = 0;
+
   // highlight
   context.fillStyle = 'rgba(255,255,255,0.12)';
-  context.fillRect(x * size + 1, y * size + 1, size - 2, 4);
+  context.fillRect(px, py, s, 4);
+
+  if (theme.pattern) {
+    drawPixelTexture(context, px, py, s);
+  }
+
+  context.restore();
   context.globalAlpha = 1;
+  context.shadowBlur = 0;
 }
 
 function drawGrid() {
@@ -301,5 +418,30 @@ document.addEventListener('keydown', e => {
 });
 
 restartBtn.addEventListener('click', init);
+
+function applyThemeClass() {
+  canvas.classList.toggle('theme-neon', currentTheme === 'neon');
+}
+
+function loadSavedTheme() {
+  const saved = localStorage.getItem(SKIN_STORAGE_KEY);
+  if (VALID_THEMES.includes(saved)) {
+    currentTheme = saved;
+  }
+  applyThemeClass();
+  if (skinSelect) skinSelect.value = currentTheme;
+}
+
+if (skinSelect) {
+  skinSelect.addEventListener('change', () => {
+    currentTheme = skinSelect.value;
+    localStorage.setItem(SKIN_STORAGE_KEY, currentTheme);
+    applyThemeClass();
+    draw();
+    if (next) drawNext();
+  });
+}
+
+loadSavedTheme();
 
 init();
