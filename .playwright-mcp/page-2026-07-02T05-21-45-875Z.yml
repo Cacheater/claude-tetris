@@ -1,0 +1,32 @@
+- generic [active] [ref=f2e1]:
+  - heading "TETRIS" [level=1] [ref=f2e2]
+  - complementary [ref=f2e6]:
+    - generic [ref=f2e7]:
+      - generic [ref=f2e8]: SCORE
+      - generic [ref=f2e9]: "0"
+    - generic [ref=f2e10]:
+      - generic [ref=f2e11]: LINES
+      - generic [ref=f2e12]: "0"
+    - generic [ref=f2e13]:
+      - generic [ref=f2e14]: LEVEL
+      - generic [ref=f2e15]: "1"
+    - generic [ref=f2e17]: NEXT
+    - generic [ref=f2e19]:
+      - generic [ref=f2e20]: CONTROLS
+      - list [ref=f2e21]:
+        - listitem [ref=f2e22]:
+          - generic [ref=f2e23]: ←
+          - generic [ref=f2e24]: →
+          - text: mover
+        - listitem [ref=f2e25]:
+          - generic [ref=f2e26]: ↑
+          - text: rotar
+        - listitem [ref=f2e27]:
+          - generic [ref=f2e28]: ↓
+          - text: bajar
+        - listitem [ref=f2e29]:
+          - generic [ref=f2e30]: Space
+          - text: caída
+        - listitem [ref=f2e31]:
+          - generic [ref=f2e32]: P
+          - text: pausa
