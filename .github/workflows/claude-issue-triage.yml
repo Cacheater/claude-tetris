@@ -73,7 +73,10 @@ jobs:
                "opened", or "## Updated triage" if EVENT ACTION is "edited"
                (post this as a new comment, do not edit/replace any previous
                triage comment, so there's a history of how the analysis
-               evolved).
+               evolved). Format the whole comment body as GitHub-flavored
+               Markdown (headings, bullet lists, and backticks/code fences
+               around file names, function names, and code snippets) so it
+               renders cleanly on GitHub.
 
             Do not modify any files in the repository and do not open a pull
             request. Only use labels and comments.
