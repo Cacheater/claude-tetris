@@ -1,0 +1,82 @@
+name: Claude Issue Triage
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Issue Triage
+        id: claude-triage
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            ISSUE NUMBER: ${{ github.event.issue.number }}
+            EVENT ACTION: ${{ github.event.action }}
+            TITLE: ${{ github.event.issue.title }}
+            AUTHOR: ${{ github.event.issue.user.login }}
+            BODY:
+            ${{ github.event.issue.body }}
+
+            You are triaging an issue in a vanilla JavaScript Tetris game (no
+            dependencies, no build step). See CLAUDE.md at the repo root for the
+            full architecture: board model, pieces, collision/wall-kicks
+            (collide, tryRotate), game loop (loop, dropAccum), locking/line
+            clears (lockPiece, merge, clearLines), scoring/leveling, rendering
+            (draw, drawNext), and state. The code lives in game.js, index.html,
+            and style.css.
+
+            Do the following:
+
+            1. Run `gh label list` to see the labels that already exist in
+               this repository.
+            2. Based on the issue title and body, choose the most appropriate
+               existing labels (e.g. type: bug/enhancement/question/
+               documentation, and any other labels that already exist and
+               apply). Only use labels that are already in the repo — do not
+               create new ones, and do not invent labels that aren't in the
+               `gh label list` output.
+            3. Apply the chosen labels with
+               `gh issue edit ${{ github.event.issue.number }} --add-label "..."`
+               (repeat --add-label per label). If EVENT ACTION is "edited",
+               only add labels that are missing based on the updated content —
+               do not remove labels a maintainer may have set manually unless
+               the new content clearly contradicts them.
+            4. Read the relevant source (game.js, index.html, style.css) with
+               the Read/Grep/Glob tools to ground your analysis in the actual
+               code. Do not speculate about code you haven't read.
+            5. Post a comment on the issue with
+               `gh issue comment ${{ github.event.issue.number }} --body "..."`
+               containing:
+               - A one-paragraph summary of the problem in your own words.
+               - The likely root cause and the specific function(s)/file(s)
+                 involved (e.g. "likely in tryRotate() in game.js").
+               - Anything unclear or missing from the report that would block
+                 a fix (repro steps, browser, expected vs actual behavior).
+               - A short suggested approach for the fix, without writing the
+                 fix itself.
+               Head the comment with "## Automated triage" if EVENT ACTION is
+               "opened", or "## Updated triage" if EVENT ACTION is "edited"
+               (post this as a new comment, do not edit/replace any previous
+               triage comment, so there's a history of how the analysis
+               evolved).
+
+            Do not modify any files in the repository and do not open a pull
+            request. Only use labels and comments.
+
+          claude_args: |
+            --allowed-tools "Bash(gh label list:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh issue view:*),Read,Grep,Glob"
