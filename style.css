@@ -82,6 +82,59 @@ body {
   border-radius: 4px;
 }
 
+/* ---- Leaderboard ---- */
+.scores-list {
+  list-style: decimal;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: #ccc;
+}
+
+.scores-list li.empty {
+  list-style: none;
+  padding-left: 0;
+  color: #555570;
+  font-style: italic;
+}
+
+.scores-list li.is-new {
+  color: #7aa2f7;
+  font-weight: 700;
+}
+
+.lifetime-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: #888;
+}
+
+.lifetime-stats strong {
+  color: #7aa2f7;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.secondary-btn {
+  background: transparent;
+  color: #888;
+  border: 1px solid #3a3a5a;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.secondary-btn:hover {
+  background: #22223a;
+  color: #ccc;
+}
+
 /* ---- Controles ---- */
 .controls ul {
   list-style: none;
@@ -118,6 +171,11 @@ kbd {
   background: rgba(10, 10, 20, 0.75);
   backdrop-filter: blur(4px);
   border-radius: 4px;
+  /* The overlay spans the whole wrapper (board + side panel). Let clicks
+     pass through the backdrop so panel controls (e.g. "Resetear records")
+     stay usable while the overlay is shown; only re-enable them on the
+     actual overlay content box. */
+  pointer-events: none;
 }
 
 .overlay.hidden {
@@ -130,6 +188,7 @@ kbd {
   flex-direction: column;
   gap: 12px;
   align-items: center;
+  pointer-events: auto;
 }
 
 #overlay-title {
@@ -161,4 +220,47 @@ kbd {
 
 #restart-btn:hover {
   background: #9bbdff;
+}
+
+.name-entry {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+#name-input {
+  background: #1a1a25;
+  border: 1px solid #3a3a5a;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #e0e0e0;
+  font-size: 13px;
+  width: 120px;
+}
+
+#name-input:focus {
+  outline: none;
+  border-color: #7aa2f7;
+}
+
+#save-score-btn {
+  background: #7aa2f7;
+  color: #0f0f17;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+#save-score-btn:hover {
+  background: #9bbdff;
+}
+
+#save-score-btn:disabled,
+#name-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
