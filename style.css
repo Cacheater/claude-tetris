@@ -82,6 +82,28 @@ body {
   border-radius: 4px;
 }
 
+/* ---- Skin selector ---- */
+#board.theme-neon {
+  background: #050508;
+  border-color: #0a0a12;
+  box-shadow: 0 0 40px rgba(122, 162, 247, 0.35);
+}
+
+.skin-select {
+  background: #1a1a25;
+  color: #e0e0e0;
+  border: 1px solid #2a2a3a;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.skin-select:focus {
+  outline: 1px solid #7aa2f7;
+}
+
 /* ---- Controles ---- */
 .controls ul {
   list-style: none;
